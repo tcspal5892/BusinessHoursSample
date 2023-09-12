@@ -1,0 +1,53 @@
+﻿@page "/edit-hours"
+@using Newtonsoft.Json;
+@inject HttpClient Http
+@inject UpdateService Update
+
+<h3>Hours Form</h3>
+
+
+
+<EditForm Model="@dailyHours" OnSubmit="@Submit">
+    <table>
+        <thead>
+            <tr>
+                <th>Day</th>
+                <th>Open</th>
+                <th>Close</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var hours in dailyHours.OperatingHoursPerDay)
+            {
+                <tr>
+                    <td>@hours.Key</td>
+                    <td><InputText @bind-Value="hours.Value.Open" /></td>
+                    <td><InputText @bind-Value="hours.Value.Close" /></td>
+                </tr>
+            }
+
+        </tbody>
+    </table>
+    <div>
+        <button type="submit">Submit</button>
+    </div>
+</EditForm>
+
+@code {
+    private DailyHours? dailyHours;
+
+    private bool isLoaded = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        dailyHours = Update._dailyHours;
+
+        isLoaded = true;//is loaded to prevent null reference exception
+    }
+
+    private void Submit()
+    {
+        Update.ChangeHours(dailyHours);
+    }//update hours kept in update service
+
+}

@@ -1,0 +1,94 @@
+﻿@page "/"
+@using CalendarApp.Services;
+@using Newtonsoft.Json;
+@inject HttpClient Http
+@inject UpdateService Update
+
+
+<PageTitle>Hours</PageTitle>
+
+<h1>Here are our hours:</h1>
+@if(this.isLoaded){
+<table>
+    <tr>
+        <th>Day</th>
+        <th>Open</th>
+        <th>Close</th>
+    </tr>
+    <tr>
+        <td>Monday</td>
+        <td>@hours.OperatingHoursPerDay["Monday"].Open</td>
+        <td>@hours.OperatingHoursPerDay["Monday"].Close</td>
+    </tr>
+    <tr>
+        <td>Tuesday</td>
+        <td>@hours.OperatingHoursPerDay["Tuesday"].Open</td>
+        <td>@hours.OperatingHoursPerDay["Tuesday"].Close</td>
+    </tr>
+    <tr>
+        <td>Wednesday</td>
+        <td>@hours.OperatingHoursPerDay["Wednesday"].Open</td>
+        <td>@hours.OperatingHoursPerDay["Wednesday"].Close</td>
+    </tr>
+    <tr>
+        <td>Thursday</td>
+        <td>@hours.OperatingHoursPerDay["Thursday"].Open</td>
+        <td>@hours.OperatingHoursPerDay["Thursday"].Close</td>
+    </tr>
+    <tr>
+        <td>Friday</td>
+        <td>@hours.OperatingHoursPerDay["Friday"].Open</td>
+        <td>@hours.OperatingHoursPerDay["Friday"].Close</td>
+    </tr>
+    <tr>
+        <td>Saturday</td>
+        <td>@hours.OperatingHoursPerDay["Saturday"].Open</td>
+        <td>@hours.OperatingHoursPerDay["Saturday"].Close</td>
+    </tr>
+    <tr>
+        <td>Sunday</td>
+        <td>@hours.OperatingHoursPerDay["Sunday"].Open</td>
+        <td>@hours.OperatingHoursPerDay["Sunday"].Close</td>
+    </tr>
+</table>
+}
+
+
+@code{
+    private DailyHours? hours;
+
+    private bool isLoaded = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Update._hoursInitialized)
+        {
+            string json = await Http.GetStringAsync("sample-data/hours.json");//get hours from server
+
+            hours = JsonConvert.DeserializeObject<DailyHours>(json);
+
+            Update.hoursInitialized();
+
+            Update.Update += UpdateState;
+
+            Update.ChangeHours(hours);
+        }//get the hours from the server if we haven't already
+        else
+        {
+            hours = Update._dailyHours;
+        }//if the hours have been loaded from server side already then get them from the update service.
+
+        isLoaded = true;
+    }
+
+    public void UpdateState()
+    {
+        hours = Update._dailyHours;
+        InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+    }//event callback function for when hours are updated from form.
+}
+
+@* <SurveyPrompt Title="How is Blazor working for you?" /> *@
